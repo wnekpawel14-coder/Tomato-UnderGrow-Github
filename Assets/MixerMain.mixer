@@ -1,5 +1,19 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!244 &-5271207768621551431
+AudioMixerEffectController:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_EffectID: 2113775cb9c049e4ab0ffd6ad304482f
+  m_EffectName: Attenuation
+  m_MixLevel: 1941d86ec663cbe4993f7709f4da6055
+  m_Parameters: []
+  m_SendTarget: {fileID: 0}
+  m_EnableWetMix: 0
+  m_Bypass: 0
 --- !u!243 &-1887378309116686351
 AudioMixerGroupController:
   m_ObjectHideFlags: 0
@@ -39,6 +53,7 @@ AudioMixerController:
   - guids:
     - 195be941746020847b33691e6d08b181
     - add7d5e0a1abe0b4d95a189cd13b88ea
+    - 06ccd52d900a31a48bd75e4f8b42d364
     name: View
   m_CurrentViewIndex: 0
   m_TargetSnapshot: {fileID: 24500006}
@@ -53,6 +68,7 @@ AudioMixerGroupController:
   m_GroupID: 195be941746020847b33691e6d08b181
   m_Children:
   - {fileID: -1887378309116686351}
+  - {fileID: 454864172744784109}
   m_Volume: b793326933b4ee144990025884ecefbc
   m_Pitch: 307d9e9eac44dc04280e9bee4b4ffa32
   m_Send: 00000000000000000000000000000000
@@ -86,8 +102,28 @@ AudioMixerSnapshotController:
   m_AudioMixer: {fileID: 24100000}
   m_SnapshotID: 4f34ddb079980304289c1628d9ee5f80
   m_FloatValues:
+    8eecf311bd7174b479af00e8fe4bd3eb: -19.928478
     6c37bd5b4300a874fbb702f33fd1cc30: -9.833286
   m_TransitionOverrides: {}
+--- !u!243 &454864172744784109
+AudioMixerGroupController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Music
+  m_AudioMixer: {fileID: 24100000}
+  m_GroupID: 06ccd52d900a31a48bd75e4f8b42d364
+  m_Children: []
+  m_Volume: 8eecf311bd7174b479af00e8fe4bd3eb
+  m_Pitch: 8d4e53c3cf65758408d442f8b5c94fd1
+  m_Send: 00000000000000000000000000000000
+  m_Effects:
+  - {fileID: -5271207768621551431}
+  m_UserColorIndex: 0
+  m_Mute: 0
+  m_Solo: 0
+  m_BypassEffects: 0
 --- !u!244 &2251322180997493423
 AudioMixerEffectController:
   m_ObjectHideFlags: 3

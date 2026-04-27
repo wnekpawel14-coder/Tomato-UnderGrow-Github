@@ -161,6 +161,7 @@ GameObject:
   - component: {fileID: 7377670043996277089}
   - component: {fileID: 4841028295872287541}
   - component: {fileID: -2403035018770088107}
+  - component: {fileID: 2647485657977355253}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -270,6 +271,7 @@ MonoBehaviour:
   runningSpeed: 11.5
   jumpHeight: 4
   gravity: -20
+  ladderSpeed: 5
   crouchHeight: 1
   standingHeight: 2
   timeToCrouch: 10
@@ -316,6 +318,29 @@ MonoBehaviour:
   rotationSensitivity: 0.01
   positionPrecision: 0.01
   scalePrecision: 0.01
+--- !u!114 &2647485657977355253
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3139356448881828875}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68f76b818deeabe4a948b6e4a58a239f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  inventory:
+  - {fileID: 11400000, guid: 9a19cff6fafa84a418e6ec67ea0136c2, type: 2}
+  - {fileID: 11400000, guid: 5b56c4058e8de424e9f3dd994c84ef2a, type: 2}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  amounts: 0000000000000000000000000000000000000000
+  activeSlot: 0
 --- !u!1 &5520587450603064363
 GameObject:
   m_ObjectHideFlags: 0
