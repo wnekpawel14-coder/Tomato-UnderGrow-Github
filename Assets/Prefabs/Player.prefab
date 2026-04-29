@@ -766,6 +766,7 @@ GameObject:
   - component: {fileID: -4927202924902917292}
   - component: {fileID: 7377670043996277089}
   - component: {fileID: 4841028295872287541}
+  - component: {fileID: 7719198869961790419}
   - component: {fileID: -2403035018770088107}
   - component: {fileID: 2647485657977355253}
   - component: {fileID: 548305922881693853}
@@ -893,6 +894,24 @@ MonoBehaviour:
   camHolder: {fileID: 8153937580464344507}
   lookSpeed: 2
   lookXLimit: 90
+--- !u!114 &7719198869961790419
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3139356448881828875}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7a0d05dc120a8148a837580cc7b468c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  climbedLadder: 0
+  collectedItem: 0
+  lookedAround: 0
 --- !u!114 &-2403035018770088107
 MonoBehaviour:
   m_ObjectHideFlags: 0

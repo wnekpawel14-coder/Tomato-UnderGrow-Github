@@ -56,6 +56,11 @@ public class Movement : NetworkBehaviour
 
     void Update()
     {
+        if (isOnLadder)
+
+    GetComponent<PlayerTasks>().CompleteClimbTask();
+    // ... reszta kodu drabiny ...
+
         if (!isLocalPlayer) return;
 
         isGrounded = characterController.isGrounded || Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, groundedDistance, groundMask);
