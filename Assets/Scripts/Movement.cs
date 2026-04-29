@@ -34,19 +34,24 @@ public class Movement : NetworkBehaviour
     private Vector3 velocity;
     private bool isGrounded;
 
-    void Start()
+    // MAGIA MIRRORA: Odpala się tylko dla CIEBIE
+    public override void OnStartLocalPlayer()
     {
-        if (!isLocalPlayer)
-        {
-            if (playerCamera != null) playerCamera.gameObject.SetActive(false);
-            return;
-        }
-
         Cursor.lockState = CursorLockMode.Locked;
         characterController = GetComponent<CharacterController>();
         
         characterController.height = standingHeight;
         characterController.center = new Vector3(0, standingHeight / 2, 0);
+    }
+
+    // MAGIA MIRRORA: Odpala się, gdy ładujesz na ekranie INNYCH graczy
+    public override void OnStartClient()
+    {
+        // Gwarancja, że kamery innych graczy zostaną wyłączone!
+        if (!isLocalPlayer && playerCamera != null)
+        {
+            playerCamera.gameObject.SetActive(false);
+        }
     }
 
     void Update()
@@ -61,7 +66,7 @@ public class Movement : NetworkBehaviour
             velocity.y = -2f; 
         }
 
-        // Obrót kamery
+        // Obrót kamery (Sowi kark idealnie zablokowany przez Clamp!)
         float mouseX = Input.GetAxis("Mouse X") * lookSpeed;
         float mouseY = Input.GetAxis("Mouse Y") * lookSpeed;
         rotationX -= mouseY;
@@ -80,14 +85,11 @@ public class Movement : NetworkBehaviour
         if (isOnLadder)
         {
             // RUCH NA DRABINIE
-            // Poruszamy się góra/dół za pomocą W/S
             Vector3 ladderMove = new Vector3(0, moveZ * ladderSpeed, 0);
             characterController.Move(ladderMove * Time.deltaTime);
             
-            // Zerujemy grawitację, żeby nie spadać podczas wspinaczki
             velocity.y = 0;
 
-            // Opcjonalnie: skok pozwala "odbić się" od drabiny
             if (Input.GetButtonDown("Jump"))
             {
                 isOnLadder = false;
@@ -117,7 +119,6 @@ public class Movement : NetworkBehaviour
         }
     }
 
-    // Wykrywanie drabiny
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Ladder"))
