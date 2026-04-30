@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 2
   tags:
   - Ladder
+  - Baza
+  - Krzak
   layers:
   - Default
   - TransparentFX

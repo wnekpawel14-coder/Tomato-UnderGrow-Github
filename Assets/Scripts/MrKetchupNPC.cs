@@ -1,92 +1,80 @@
 using UnityEngine;
+using Mirror;
 
 public class MrKetchupNPC : MonoBehaviour
 {
-    public float interactionRadius = 4f;
-    private Transform localPlayerTransform;
+    // --- DEFINICJE ZMIENNYCH (To ich brakowało!) ---
+    private bool hasIntroduced = false;
     private PlayerTasks localPlayerTasks;
-
-    // Faza rozmowy
-    private bool hasIntroduced = false; 
-
-    [Header("Dialogi - Faza 1: Powitanie")]
-    public string[] introLines = { 
-        "Siema, mordo! Heh, patrzysz na mnie i myślisz: 'Czemu ta kapsuła jest taka czerwona?'",
-        "Ksywa Ketchup nie wzięła się znikąd, ale o tym pogadamy później.",
-        "Słuchaj, zanim Cię wpuszczę na głęboką wodę, muszę sprawdzić czy ogarniasz podstawy.",
-        "Widzisz tę drabinę? Wejdź na samą górę i wróć do mnie. Muszę wiedzieć, że nie masz lęku wysokości!" 
-    };
-
-    [Header("Dialogi - Faza 2: Przypomnienie")]
-    public string[] reminderLines = { 
-        "No i co? Drabina sama się nie przejdzie!", 
-        "Dajesz, góra-dół i wracaj pogadać." 
-    };
-
-    [Header("Dialogi - Faza 3: Nagroda/Koniec")]
-    public string[] successLines = { 
-        "O! I to rozumiem! Widzę, że grawitacja Ci nie straszna.", 
-        "Dobra, jesteś gotowy. Rozejrzyj się za fantami i baw się dobrze!" 
-    };
 
     void Update()
     {
-        // Szukanie lokalnego gracza
-        if (localPlayerTransform == null)
+        // Sprawdzamy czy gracz jest blisko i nacisnął E
+        if (NetworkClient.localPlayer != null)
         {
-            if (Mirror.NetworkClient.localPlayer != null)
+            float dist = Vector3.Distance(transform.position, NetworkClient.localPlayer.transform.position);
+            
+            if (dist < 4f && Input.GetKeyDown(KeyCode.E))
             {
-                localPlayerTransform = Mirror.NetworkClient.localPlayer.transform;
-                localPlayerTasks = localPlayerTransform.GetComponent<PlayerTasks>();
-            }
-            return;
-        }
+                // Pobieramy skrypt zadań z lokalnego gracza, jeśli jeszcze go nie mamy
+                if (localPlayerTasks == null)
+                {
+                    localPlayerTasks = NetworkClient.localPlayer.GetComponent<PlayerTasks>();
+                }
 
-        float distance = Vector3.Distance(transform.position, localPlayerTransform.position);
-
-        if (distance <= interactionRadius)
-        {
-            if (Input.GetKeyDown(KeyCode.E))
-            {
                 HandleConversation();
-            }
-        }
-        else
-        {
-            // Auto-zamykanie przy odejściu
-            if (DialogueManager.instance.dialoguePanel.activeSelf)
-            {
-                DialogueManager.instance.dialoguePanel.SetActive(false);
             }
         }
     }
 
     void HandleConversation()
     {
-        // 1. Jeśli panel już jest otwarty, po prostu przewijaj tekst
         if (DialogueManager.instance.dialoguePanel.activeSelf)
         {
             DialogueManager.instance.DisplayNextSentence();
             return;
         }
 
-        // 2. Logika wyboru dialogu przy otwieraniu:
-        
-        // KROK 1: Przedstawienie się
+        // 1. Powitanie
         if (!hasIntroduced)
         {
-            DialogueManager.instance.StartDialogue(introLines);
-            hasIntroduced = true; // Zapamiętujemy, że już się poznaliśmy
+            DialogueManager.instance.StartDialogue(new string[] { 
+                "Siemanko! Jestem Mr. Ketchup.",
+                "Zrób dla mnie parę rzeczy, a będziemy kwita." 
+            });
+            hasIntroduced = true;
         }
-        // KROK 2: Sprawdzenie czy zadanie wykonane
-        else if (localPlayerTasks != null && localPlayerTasks.climbedLadder)
+        // 2. Zadanie: DRABINA
+        else if (!localPlayerTasks.climbedLadder)
         {
-            DialogueManager.instance.StartDialogue(successLines);
+            DialogueManager.instance.StartDialogue(new string[] { 
+                "Twoje pierwsze zadanie: Wejdź na tę drabinę!", 
+                "Grawitacja nie powinna być dla Ciebie przeszkodą." 
+            });
         }
-        // KROK 3: Przypomnienie o zadaniu
+        // 3. Zadanie: KRZAK
+        else if (!localPlayerTasks.enteredBush)
+        {
+            DialogueManager.instance.StartDialogue(new string[] { 
+                "Nieźle z tą drabiną! Teraz drugie zadanie.",
+                "Skocz w te gęste krzaki i sprawdź, czy nic tam nie siedzi!" 
+            });
+        }
+        // 4. Zadanie: BAZA
+        else if (!localPlayerTasks.visitedBase)
+        {
+            DialogueManager.instance.StartDialogue(new string[] { 
+                "Dobra robota! Ostatnia sprawa.",
+                "Odwiedź naszą Bazę, musisz wiedzieć gdzie się schronić." 
+            });
+        }
+        // 5. KONIEC
         else
         {
-            DialogueManager.instance.StartDialogue(reminderLines);
+            DialogueManager.instance.StartDialogue(new string[] { 
+                "Gratulacje, mordo!", 
+                "Zaliczyłeś wszystko. Jesteś teraz szefem tej okolicy!" 
+            });
         }
     }
 }
