@@ -1050,13 +1050,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fee869e9a23cf384185844559fb32761, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerTransform: {fileID: 0}
-  maxDistance: 3
-  minDistance: 0.5
-  smoothSpeed: 10
-  wallLayers:
-    serializedVersion: 2
-    m_Bits: 0
 --- !u!1001 &339571624
 PrefabInstance:
   m_ObjectHideFlags: 0
