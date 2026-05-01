@@ -3,140 +3,64 @@ using UnityEngine;
 
 public class Movement : NetworkBehaviour
 {
-    [Header("Movement Settings")]
+    [HideInInspector] public bool isPausedFromMenu = false;
+
+    [Header("Kamera")]
+    public Camera playerCamera;
+    [SerializeField] private Transform camHolder;
+    [SerializeField] private float lookSpeed = 2.0f; 
+    [SerializeField] private float lookXLimit = 85.0f; 
+
+    [Header("Ruch")]
     [SerializeField] private float walkingSpeed = 8f;
     [SerializeField] private float runningSpeed = 12f;
     [SerializeField] private float jumpHeight = 2.5f; 
-    [SerializeField] private float gravity = -45f;      
-
-    [Header("Ladder Settings")]
-    [SerializeField] private float ladderSpeed = 5f;
-    private bool isOnLadder = false;
-
-    [Header("Crouch Settings")]
-    [SerializeField] private float crouchHeight = 1f;
-    [SerializeField] private float standingHeight = 2f;
-    [SerializeField] private float timeToCrouch = 10f;
-    [SerializeField] private float crouchSpeed = 4f;
-
-    [Header("Grounding")]
-    [SerializeField] private LayerMask groundMask;
-    [SerializeField] private float groundedDistance = 0.5f;
-
-    [Header("Camera")]
-    public Camera playerCamera;
-    [SerializeField] private Transform camHolder;
-    [SerializeField] private float lookSpeed = 2.0f;
-    [SerializeField] private float lookXLimit = 85.0f; 
+    [SerializeField] private float gravity = -45f;
 
     private CharacterController characterController;
     private float rotationX = 0;
     private Vector3 velocity;
     private bool isGrounded;
 
-    // MAGIA MIRRORA: Odpala się tylko dla CIEBIE
     public override void OnStartLocalPlayer()
     {
-        Cursor.lockState = CursorLockMode.Locked;
         characterController = GetComponent<CharacterController>();
-        
-        characterController.height = standingHeight;
-        characterController.center = new Vector3(0, standingHeight / 2, 0);
-    }
-
-    // MAGIA MIRRORA: Odpala się, gdy ładujesz na ekranie INNYCH graczy
-    public override void OnStartClient()
-    {
-        // Gwarancja, że kamery innych graczy zostaną wyłączone!
-        if (!isLocalPlayer && playerCamera != null)
-        {
-            playerCamera.gameObject.SetActive(false);
-        }
+        isPausedFromMenu = false;
+        // Na starcie lokujemy kursor raz
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     void Update()
     {
-        if (isOnLadder)
-
-    GetComponent<PlayerTasks>().CompleteClimbTask();
-    // ... reszta kodu drabiny ...
-
         if (!isLocalPlayer) return;
 
-        isGrounded = characterController.isGrounded || Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, groundedDistance, groundMask);
+        // Jeśli menu jest aktywne, całkowicie ignorujemy Update
+        if (isPausedFromMenu) return;
 
-        // Reset grawitacji tylko jeśli nie jesteśmy na drabinie
-        if (isGrounded && velocity.y < 0 && !isOnLadder)
-        {
-            velocity.y = -2f; 
-        }
+        // 1. Logika ziemi
+        isGrounded = characterController.isGrounded || Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, 0.5f);
+        if (isGrounded && velocity.y < 0) velocity.y = -2f;
 
-        // Obrót kamery (Sowi kark idealnie zablokowany przez Clamp!)
+        // 2. Obrót kamery
         float mouseX = Input.GetAxis("Mouse X") * lookSpeed;
         float mouseY = Input.GetAxis("Mouse Y") * lookSpeed;
+
         rotationX -= mouseY;
         rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
-        camHolder.localRotation = Quaternion.Euler(rotationX, 0, 0);
+        
+        if (camHolder != null) camHolder.localRotation = Quaternion.Euler(rotationX, 0, 0);
         transform.Rotate(Vector3.up * mouseX);
 
-        HandleMovement();
-    }
-
-    private void HandleMovement()
-    {
+        // 3. Chodzenie
         float moveX = Input.GetAxisRaw("Horizontal");
         float moveZ = Input.GetAxisRaw("Vertical");
+        Vector3 move = (transform.right * moveX + transform.forward * moveZ).normalized;
+        characterController.Move(move * walkingSpeed * Time.deltaTime);
 
-        if (isOnLadder)
-        {
-            // RUCH NA DRABINIE
-            Vector3 ladderMove = new Vector3(0, moveZ * ladderSpeed, 0);
-            characterController.Move(ladderMove * Time.deltaTime);
-            
-            velocity.y = 0;
-
-            if (Input.GetButtonDown("Jump"))
-            {
-                isOnLadder = false;
-                velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-            }
-        }
-        else
-        {
-            // NORMALNY RUCH
-            bool isCrouching = Input.GetKey(KeyCode.LeftControl);
-            float targetHeight = isCrouching ? crouchHeight : standingHeight;
-            characterController.height = Mathf.Lerp(characterController.height, targetHeight, Time.deltaTime * timeToCrouch);
-            characterController.center = new Vector3(0, characterController.height / 2, 0);
-
-            float currentSpeed = isCrouching ? crouchSpeed : (Input.GetKey(KeyCode.LeftShift) ? runningSpeed : walkingSpeed);
-
-            Vector3 move = (transform.right * moveX + transform.forward * moveZ).normalized;
-            characterController.Move(move * currentSpeed * Time.deltaTime);
-
-            if (Input.GetButtonDown("Jump") && isGrounded)
-            {
-                velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-            }
-
-            velocity.y += gravity * Time.deltaTime;
-            characterController.Move(velocity * Time.deltaTime);
-        }
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Ladder"))
-        {
-            isOnLadder = true;
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("Ladder"))
-        {
-            isOnLadder = false;
-        }
+        // 4. Skok i grawitacja
+        if (Input.GetButtonDown("Jump") && isGrounded) velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+        velocity.y += gravity * Time.deltaTime;
+        characterController.Move(velocity * Time.deltaTime);
     }
 }

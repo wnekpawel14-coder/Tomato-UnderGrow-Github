@@ -3,26 +3,29 @@ using Mirror;
 
 public class MrKetchupNPC : MonoBehaviour
 {
-    // --- DEFINICJE ZMIENNYCH (To ich brakowało!) ---
     private bool hasIntroduced = false;
     private PlayerTasks localPlayerTasks;
+    
+    public float zasiegRozmowy = 4f;
+    public float zasiegZamkniecia = 6f;
 
     void Update()
     {
-        // Sprawdzamy czy gracz jest blisko i nacisnął E
         if (NetworkClient.localPlayer != null)
         {
             float dist = Vector3.Distance(transform.position, NetworkClient.localPlayer.transform.position);
             
-            if (dist < 4f && Input.GetKeyDown(KeyCode.E))
+            if (dist < zasiegRozmowy && Input.GetKeyDown(KeyCode.E))
             {
-                // Pobieramy skrypt zadań z lokalnego gracza, jeśli jeszcze go nie mamy
                 if (localPlayerTasks == null)
-                {
                     localPlayerTasks = NetworkClient.localPlayer.GetComponent<PlayerTasks>();
-                }
 
                 HandleConversation();
+            }
+
+            if (dist > zasiegZamkniecia && DialogueManager.instance.dialoguePanel.activeSelf)
+            {
+                DialogueManager.instance.dialoguePanel.SetActive(false);
             }
         }
     }
@@ -35,46 +38,48 @@ public class MrKetchupNPC : MonoBehaviour
             return;
         }
 
-        // 1. Powitanie
+        // 1. POWITANIE -> Aktywuje Etap 1
         if (!hasIntroduced)
         {
             DialogueManager.instance.StartDialogue(new string[] { 
                 "Siemanko! Jestem Mr. Ketchup.",
-                "Zrób dla mnie parę rzeczy, a będziemy kwita." 
+                "Słuchaj, mam dla Ciebie parę spraw, ale po kolei." 
             });
+            localPlayerTasks.SetQuestStage(1); // Odblokuj Drabinę
             hasIntroduced = true;
         }
-        // 2. Zadanie: DRABINA
-        else if (!localPlayerTasks.climbedLadder)
+        // 2. JEŚLI ZROBIŁ DRABINĘ -> Aktywuje Etap 2
+        else if (localPlayerTasks.climbedLadder && localPlayerTasks.currentQuestStage == 1)
         {
             DialogueManager.instance.StartDialogue(new string[] { 
-                "Twoje pierwsze zadanie: Wejdź na tę drabinę!", 
-                "Grawitacja nie powinna być dla Ciebie przeszkodą." 
+                "Świetnie! Skoro umiesz się wspinać, sprawdź te krzaki.",
+                "Podejdź do nich blisko i zobacz czy są bezpieczne." 
             });
+            localPlayerTasks.SetQuestStage(2); // Odblokuj Krzak
         }
-        // 3. Zadanie: KRZAK
-        else if (!localPlayerTasks.enteredBush)
+        // 3. JEŚLI ZROBIŁ KRZAK -> Aktywuje Etap 3
+        else if (localPlayerTasks.enteredBush && localPlayerTasks.currentQuestStage == 2)
         {
             DialogueManager.instance.StartDialogue(new string[] { 
-                "Nieźle z tą drabiną! Teraz drugie zadanie.",
-                "Skocz w te gęste krzaki i sprawdź, czy nic tam nie siedzi!" 
+                "W krzakach czysto? Dobra robota.",
+                "Na koniec leć do Bazy zameldować, że wszystko gra!" 
             });
+            localPlayerTasks.SetQuestStage(3); // Odblokuj Bazę
         }
-        // 4. Zadanie: BAZA
+        // 4. JEŚLI NIC NOWEGO NIE ZROBIŁ -> Przypomnienie
         else if (!localPlayerTasks.visitedBase)
         {
-            DialogueManager.instance.StartDialogue(new string[] { 
-                "Dobra robota! Ostatnia sprawa.",
-                "Odwiedź naszą Bazę, musisz wiedzieć gdzie się schronić." 
-            });
+            string przypomnienie = "No i jak tam? Robota sama się nie zrobi!";
+            if (localPlayerTasks.currentQuestStage == 1) przypomnienie = "Leć na tę drabinę!";
+            if (localPlayerTasks.currentQuestStage == 2) przypomnienie = "Sprawdź te krzaki!";
+            if (localPlayerTasks.currentQuestStage == 3) przypomnienie = "Baza czeka na raport!";
+
+            DialogueManager.instance.StartDialogue(new string[] { przypomnienie });
         }
-        // 5. KONIEC
+        // 5. KONIEC WSZYSTKIEGO
         else
         {
-            DialogueManager.instance.StartDialogue(new string[] { 
-                "Gratulacje, mordo!", 
-                "Zaliczyłeś wszystko. Jesteś teraz szefem tej okolicy!" 
-            });
+            DialogueManager.instance.StartDialogue(new string[] { "Dzięki mordo, zadania wykonane!" });
         }
     }
 }

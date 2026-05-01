@@ -3,43 +3,50 @@ using Mirror;
 
 public class PlayerTasks : NetworkBehaviour
 {
-    // Flagi zadań
-    public bool climbedLadder = false;
-    public bool collectedItem = false;
-    public bool lookedAround = false;
-    
-    [Header("Nowe Zadania")]
-    public bool enteredBush = false; // Zadanie: Krzak
-    public bool visitedBase = false;  // Zadanie: Baza
+    [Header("Postęp Fabuły")]
+    public int currentQuestStage = 0; // 0 = brak, 1 = drabina, 2 = krzak, 3 = baza
 
-    // Funkcja wywoływana, gdy gracz wejdzie na drabinę (np. przez skrypt drabiny)
+    [Header("Flagi zadań")]
+    public bool climbedLadder = false;
+    public bool enteredBush = false; 
+    public bool visitedBase = false;
+
+    // Funkcja wywoływana przez Ketchupa, by podnieść etap gry
+    public void SetQuestStage(int stage)
+    {
+        if (stage > currentQuestStage)
+        {
+            currentQuestStage = stage;
+            Debug.Log("<color=cyan>Nowy etap zadania: " + stage + "</color>");
+        }
+    }
+
     public void CompleteClimbTask()
     {
-        if (!climbedLadder)
+        // Zaliczamy tylko, jeśli jesteśmy na etapie 1 (Drabina)
+        if (currentQuestStage == 1 && !climbedLadder)
         {
             climbedLadder = true;
             Debug.Log("Zadanie: Drabina zaliczona!");
         }
     }
 
-    // Automatyczne wykrywanie wejścia w krzak lub bazę
     private void OnTriggerEnter(Collider other)
     {
-        // Sprawdzamy postępy tylko dla lokalnego gracza
         if (!isLocalPlayer) return;
 
-        // Obsługa zadania: Krzak
-        if (other.CompareTag("Krzak") && !enteredBush)
+        // Zadanie 2: Krzak (działa tylko jeśli etap == 2)
+        if (other.CompareTag("Krzak") && currentQuestStage == 2 && !enteredBush)
         {
             enteredBush = true;
-            Debug.Log("Zadanie wykonane: Gracz wszedł w krzak!");
+            Debug.Log("Zadanie: Krzak zaliczony!");
         }
 
-        // Obsługa zadania: Baza
-        if (other.CompareTag("Baza") && !visitedBase)
+        // Zadanie 3: Baza (działa tylko jeśli etap == 3)
+        if (other.CompareTag("Baza") && currentQuestStage == 3 && !visitedBase)
         {
             visitedBase = true;
-            Debug.Log("Zadanie wykonane: Odwiedzono Bazę!");
+            Debug.Log("Zadanie: Baza zaliczona!");
         }
     }
 }
